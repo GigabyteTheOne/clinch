@@ -18,6 +18,7 @@ class Packer
     @_settings_ = 
       strict : @_options_.strict ? on
       inject : @_options_.inject ? on
+      cache_modules: @_options_.cache_modules ? on
 
     @_clinch_verison_ = clinch_package.version
 
@@ -140,8 +141,21 @@ class Packer
   This is header for our browser package
   ###
   _getBoilerplateJS : () ->
+    if @_settings_.cache_modules
+      cacheModulesStr1 = "  var modules_cache = [];"
+      cacheModulesStr2 = """
+          resolved_name = resolved_name || name;
+            if (modules_cache[resolved_name]) {
+              return modules_cache[resolved_name];
+            }
+        """ 
+      cacheModulesStr3 = "modules_cache[resolved_name] = res;"
+    else
+      cacheModulesStr1 = cacheModulesStr2 = cacheModulesStr3 = ""
+
     """    
     var dependencies, name_resolver, require, sources, _this = this;
+    #{cacheModulesStr1}
 
     name_resolver = function(parent, name) {
       if (dependencies[parent] == null) {
@@ -160,10 +174,17 @@ class Packer
           throw Error("can`t find module source code: original_name - |" + name + "|, resolved_name - |" + resolved_name + "|");
         }
       }
+
+      #{cacheModulesStr2}
+
       module_source.call(_this,exports = {}, module = {}, function(mod_name) {
         return require(mod_name, resolved_name != null ? resolved_name : name);
       });
-      return (_ref = module.exports) != null ? _ref : exports;
+      var res = (_ref = module.exports) != null ? _ref : exports;
+
+      #{cacheModulesStr3}
+
+      return res;
     };
     """
 

@@ -80,7 +80,7 @@ class Clinch
     inject : on
     ###
     packer_settings = {log}
-    for setting_name in ['strict', 'inject']
+    for setting_name in ['strict', 'inject', 'cache_modules']
       if @_options_[setting_name]?
         packer_settings[setting_name] = @_options_[setting_name]
     @_di_cont_obj_.setComponentsSettings Packer : packer_settings
